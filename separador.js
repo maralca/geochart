@@ -95,7 +95,7 @@
 			for(docIndex = 0; docs.length > docIndex; docIndex++){
 				doc = docs[docIndex];
 				doc.addEventListener("load",function(){
-
+					var innerMatrix = {};
 					svg = this.getSVGDocument();
 
 					ALPHA = svg.querySelector("g");
@@ -106,7 +106,7 @@
 						if(regioesNome.indexOf(g.id.toLowerCase()) >= 0){
 							regiao = g;
 							regiaoId = regiao.id;
-							matrix[regiaoId] = {};
+							innerMatrix[regiaoId] = {};
 
 							if(gs.length > 1)
 								filename = "BRASIL";
@@ -119,7 +119,7 @@
 								for(estadoIndex = 0; estados.length > estadoIndex; estadoIndex++){
 									estado = estados[estadoIndex];
 									estadoId = estado.id;
-									matrix[regiaoId][estadoId] = {};
+									innerMatrix[regiaoId][estadoId] = {};
 
 									seletorLevelThree = seletorLevelTwo + " > g";
 									cidades = estado.querySelectorAll(seletorLevelThree);
@@ -127,7 +127,7 @@
 									for(cidadeIndex = 0; cidades.length > cidadeIndex; cidadeIndex++){
 										cidade = cidades[cidadeIndex];
 										cidadeId = cidade.id;
-										matrix[regiaoId][estadoId][cidadeId] = {
+										innerMatrix[regiaoId][estadoId][cidadeId] = {
 											nome: matrixNome[cidadeId],
 											coordenadas: []
 										};
@@ -136,7 +136,7 @@
 										for(coordenadaIndex = 0; coordenadas.length > coordenadaIndex; coordenadaIndex++){
 											coordenada = coordenadas[coordenadaIndex];
 											coordenada = coordenada.getAttribute("d");
-											matrix[regiaoId][estadoId][cidadeId].coordenadas.push(coordenada);
+											innerMatrix[regiaoId][estadoId][cidadeId].coordenadas.push(coordenada);
 										};
 									};
 								};
@@ -147,7 +147,7 @@
 									coordenada = coordenadas[coordenadaIndex];
 									estadoId = coordenada.id;
 									coordenada = coordenada.getAttribute("d");
-									matrix[regiaoId][estadoId] = coordenada;
+									innerMatrix[regiaoId][estadoId] = coordenada;
 								};
 							}
 						}
@@ -155,32 +155,35 @@
 							estadoId = ALPHA.id;
 							filename = estadoId;
 							regiaoId = getRegiaoNome(estadoId);
+							if(regiaoId == undefined || regiaoId == "undefined"){
+								regiaoId = estadoId;
+							}
 							cidade = g;
 							cidadeId = cidade.id;
 							console.log(cidadeId,estadoId,regiaoId);
-							if(!matrix[regiaoId]){
-								matrix[regiaoId] = {};								
+							if(!innerMatrix[regiaoId]){
+								innerMatrix[regiaoId] = {};								
 							}
-							if(!matrix[regiaoId][estadoId]){
-								matrix[regiaoId][estadoId] = {};
+							if(!innerMatrix[regiaoId][estadoId]){
+								innerMatrix[regiaoId][estadoId] = {};
 							}
 							coordenadas = cidade.getElementsByTagName("path");
-							matrix[regiaoId][estadoId][cidadeId] = {
+							innerMatrix[regiaoId][estadoId][cidadeId] = {
 								nome: matrixNome[cidadeId],
 								coordenadas: []
 							};
 							for(coordenadaIndex = 0; coordenadas.length > coordenadaIndex; coordenadaIndex++){
 								coordenada = coordenadas[coordenadaIndex];
 								coordenada = coordenada.getAttribute("d");
-								matrix[regiaoId][estadoId][cidadeId].coordenadas.push(coordenada);
+								innerMatrix[regiaoId][estadoId][cidadeId].coordenadas.push(coordenada);
 							};
 						}
 							
 					};		
 					var content;
-					content = "var XTR_"+filename+" = "+JSON.stringify(matrix)+";";
+					content = "var XTR_"+filename+" = "+JSON.stringify(innerMatrix)+";";
 					
-					console.log(matrix);
+					console.log(innerMatrix);
 					FileHandler(content,false,false).download("XTR_"+filename+".js",function(){});
 				});
 			};
