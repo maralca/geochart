@@ -95,112 +95,204 @@
 			for(docIndex = 0; docs.length > docIndex; docIndex++){
 				doc = docs[docIndex];
 				doc.addEventListener("load",function(){
-					var innerMatrix = {};
+					var filename;
+					var innerMatrix;
+
+					var indexLevelOne;
+					var indexLevelTwo;
+					var indexLevelThree;
+					var indexLevelFour;
+
+					var svg;
+
+					var g1,g2,g3,g4;
+					var path;
+
+					var gBrasil
+					var gRegioes,gRegiao;
+					var gEstados,gEstado;
+					var gMunicipios,gMunicipio;
+					var pathEstados,pathEstado;
+					var pathMunicipios,pathMunicipio;
+					var coordenadas;
+
+					innerMatrix = {};
+
 					svg = this.getSVGDocument();
 
-					ALPHA = svg.querySelector("g");
-					seletorLevelOne = "#"+ALPHA.id+"> g";
-					gs = svg.querySelectorAll(seletorLevelOne);
-					for(gIndex = 0; gs.length > gIndex; gIndex++){
-						g = gs[gIndex];
-						if(regioesNome.indexOf(g.id.toLowerCase()) >= 0){
-							regiao = g;
-							regiaoId = regiao.id;
-							innerMatrix[regiaoId] = {};
+					g1 = svg.querySelector("g");
+					if(g1.id == "BRASIL"){
+						innerMatrix["BRASIL"] = {};
 
-							if(gs.length > 1)
-								filename = "BRASIL";
-							else
-								filename = regiaoId;
+						gBrasil = g1;
 
-							seletorLevelTwo = seletorLevelOne + " > g";
-							estados = regiao.querySelectorAll(seletorLevelTwo);
-							if(estados.length > 0){
-								for(estadoIndex = 0; estados.length > estadoIndex; estadoIndex++){
-									estado = estados[estadoIndex];
-									estadoId = estado.id;
-									innerMatrix[regiaoId][estadoId] = {};
+						g2 = svg.querySelectorAll("#"+gBrasil.id+" > g");
+						gRegioes = g2;
+						for(indexLevelOne = 0; gRegioes.length > indexLevelOne; indexLevelOne++){
+							gRegiao = gRegioes[indexLevelOne];
 
-									seletorLevelThree = seletorLevelTwo + " > g";
-									cidades = estado.querySelectorAll(seletorLevelThree);
+							innerMatrix["BRASIL"][gRegiao.id] = {};
 
-									for(cidadeIndex = 0; cidades.length > cidadeIndex; cidadeIndex++){
-										cidade = cidades[cidadeIndex];
-										cidadeId = cidade.id;
-										innerMatrix[regiaoId][estadoId][cidadeId] = {
-											nome: matrixNome[cidadeId],
-											coordenadas: []
+							g3 = svg.querySelectorAll("#"+gBrasil.id+" > #"+gRegiao.id+" > g");
+							if(g3.length > 0){ //BRASIL_MUNICIPIOS
+								gEstados = g3;
+								filename = "BRASIL_MUNICIPIOS";
+								for(indexLevelTwo = 0; gEstados.length > indexLevelTwo; indexLevelTwo++){
+									gEstado = gEstados[indexLevelTwo];
+
+									innerMatrix["BRASIL"][gRegiao.id][gEstado.id] = {};
+
+									gMunicipios = svg.querySelectorAll("#"+gBrasil.id+" > #"+gRegiao.id+" > #"+gEstado.id+" > g");
+
+									for(indexLevelThree = 0; gMunicipios.length > indexLevelThree; indexLevelThree++){
+										gMunicipio = gMunicipios[indexLevelThree];
+
+										innerMatrix["BRASIL"][gRegiao.id][gEstado.id][gMunicipio.id] = {
+											nome: matrixNome[gMunicipio.id],
+											coordenada: [],
+											tag: "path",
+											attr: "d"
 										};
 
-										coordenadas = cidade.getElementsByTagName("path");
-										for(coordenadaIndex = 0; coordenadas.length > coordenadaIndex; coordenadaIndex++){
-											coordenada = coordenadas[coordenadaIndex];
-											coordenada = coordenada.getAttribute("d");
-											innerMatrix[regiaoId][estadoId][cidadeId].coordenadas.push(coordenada);
-										};
+										pathMunicipios = gMunicipio.querySelectorAll("path");
+
+										for(indexLevelFour = 0; pathMunicipios.length > indexLevelFour; indexLevelFour++){
+											pathMunicipio = pathMunicipios[indexLevelFour];
+											coordenadas = pathMunicipio.getAttribute("d");
+											innerMatrix["BRASIL"][gRegiao.id][gEstado.id][gMunicipio.id].coordenada.push(coordenadas)
+										}
+
+									}
+								}
+							}
+							else{ //BRASIL_ESTADOS
+								pathEstados = gRegiao.querySelectorAll("path");
+
+								filename = "BRASIL_ESTADOS";
+								for(indexLevelTwo = 0; pathEstados.length > indexLevelTwo; indexLevelTwo++){
+									pathEstado = pathEstados[indexLevelTwo];
+
+									innerMatrix["BRASIL"][gRegiao.id][pathEstado.id] = {
+										nome: pathEstado.id,
+										coordenada: pathEstado.getAttribute("d"),
+										tag: "path",
+										attr: "d"
 									};
-								};
+
+								}
 							}
-							else{
-								coordenadas = regiao.getElementsByTagName("path");
-								for(coordenadaIndex = 0; coordenadas.length > coordenadaIndex; coordenadaIndex++){
-									coordenada = coordenadas[coordenadaIndex];
-									estadoId = coordenada.id;
-									coordenada = coordenada.getAttribute("d");
-									innerMatrix[regiaoId][estadoId] = coordenada;
+						}
+					}
+					else if(getEstados(g1.id)){ 
+						gRegiao = g1;
+
+						innerMatrix[gRegiao.id] = {};
+
+						gEstados = svg.querySelectorAll("#"+gRegiao.id+" > g");
+
+						if(getEstados.length > 0){ // REGIAO_ESTADOS
+							filename = gRegiao.id+"_ESTADOS";
+
+							pathEstados = gRegiao.querySelectorAll("polygon");
+
+							for(indexLevelOne = 0; pathEstados.length > indexLevelOne; indexLevelOne++){
+								pathEstado = pathEstados[indexLevelOne];
+
+								innerMatrix[gRegiao.id][pathEstado.id] = {
+									nome: pathEstado.id,
+									coordenada: pathEstado.getAttribute("points"),
+									tag: "polygon",
+									attr: "points"
 								};
 							}
 						}
-						else{
-							estadoId = ALPHA.id;
-							filename = estadoId;
-							regiaoId = getRegiaoNome(estadoId);
-							if(regiaoId == undefined || regiaoId == "undefined"){
-								regiaoId = estadoId;
+						else{ // REGIAO_MUNICIPIOS
+							filename = gRegiao.id+"_MUNICIPIOS";
+							for(indexLevelOne = 0; gEstados.length > 0; indexLevelOne++){
+								gEstado = gEstados[indexLevelOne];
+								innerMatrix[gRegiao.id][gEstado.id] = {};
+
+								gMunicipios = svg.querySelectorAll("#"+gRegiao.id+" > #"+gEstado.id+" > g");
+
+								for(indexLevelTwo = 0; gMunicipios.length > indexLevelTwo; indexLevelTwo++){
+									gMunicipio = gMunicipios[indexLevelTwo];
+
+									innerMatrix[gRegiao.id][gEstado.id][gMunicipio.id]={
+										nome: matrixNome[gMunicipio.id],
+										coordenadas: [],
+										tag: "path",
+										attr: "d"
+									};
+
+									pathMunicipios = gMunicipio.querySelectorAll("path");
+
+									for(indexLevelThree = 0; pathMunicipios.length > indexLevelThree; indexLevelThree++){
+										pathMunicipio = pathMunicipios[indexLevelThree];
+										coordenadas = pathMunicipio.getAttribute("d");
+										innerMatrix[gRegiao.id][gEstado.id][gMunicipio.id].push(coordenadas);
+									}
+								}
 							}
-							cidade = g;
-							cidadeId = cidade.id;
-							console.log(cidadeId,estadoId,regiaoId);
-							if(!innerMatrix[regiaoId]){
-								innerMatrix[regiaoId] = {};								
-							}
-							if(!innerMatrix[regiaoId][estadoId]){
-								innerMatrix[regiaoId][estadoId] = {};
-							}
-							coordenadas = cidade.getElementsByTagName("path");
-							innerMatrix[regiaoId][estadoId][cidadeId] = {
-								nome: matrixNome[cidadeId],
+						}
+					}
+					else if(g1.id.length == 2){ //ESTADO_MUNICIPIOS
+						gEstado = g1;
+
+						innerMatrix[gEstado.id] = {};
+
+						filename = gEstado.id;
+						gMunicipios = svg.querySelectorAll("#"+gEstado.id+" > g");
+
+						for(indexLevelOne = 0; gMunicipios.length > indexLevelOne; indexLevelOne++){
+							gMunicipio = gMunicipios[indexLevelOne];
+
+							innerMatrix[gEstado.id][gMunicipio.id] = {
+								nome: matrixNome[gMunicipio.id],
 								coordenadas: []
-							};
-							for(coordenadaIndex = 0; coordenadas.length > coordenadaIndex; coordenadaIndex++){
-								coordenada = coordenadas[coordenadaIndex];
-								coordenada = coordenada.getAttribute("d");
-								innerMatrix[regiaoId][estadoId][cidadeId].coordenadas.push(coordenada);
-							};
+							}
+							pathMunicipios = gMunicipio.querySelectorAll("path");
+
+							for(indexLevelTwo = 0; pathMunicipios.length > indexLevelTwo; indexLevelTwo++){
+								pathMunicipio = pathMunicipios[indexLevelTwo];
+
+								coordenadas = pathMunicipio.getAttribute("d");
+
+								innerMatrix[gEstado.id][gMunicipio.id].coordenadas.push(coordenadas);
+
+							}
 						}
-							
-					};		
+					}
 					var content;
 					content = "var XTR_"+filename+" = "+JSON.stringify(innerMatrix)+";";
 					
+					console.log(filename);
 					console.log(innerMatrix);
 					FileHandler(content,false,false).download("XTR_"+filename+".js",function(){});
 				});
 			};
 		});
 	});
-	function getRegiaoNome(estado){		
-		const regioes = {
-			"norte": ["ac","am","ap","pa","ro","rr","to"],
-			"nordeste": ["al","ba","ce","ma","pb","pe","pi","rn","se"],
-			"centro-oeste": ["df","go","ms","mt"],
-			"sudeste": ["sp","es","mg","rj"],
-			"sul": ["pr","rs","sc"]
+	const regioes = {
+		"norte": ["ac","am","ap","pa","ro","rr","to"],
+		"nordeste": ["al","ba","ce","ma","pb","pe","pi","rn","se"],
+		"centro-oeste": ["df","go","ms","mt"],
+		"sudeste": ["sp","es","mg","rj"],
+		"sul": ["pr","rs","sc"]
+	}
+	function getEstados(regiao){
+		regiao = regiao.toLowerCase();
+		if(isset(regioes[regiao])){
+			return regioes[regiao];
 		}
+		return false;
+	}
+	function getRegiaoNome(estado){		
+		
 		for(regiaoNome in regioes){
 			if(regioes[regiaoNome].indexOf(estado.toLowerCase()) >=0)
 				return regiaoNome.toUpperCase();
 		}
+		return false;
 	}
 	function FileHandler(data,isBase,isJson){
 		var isBase64;
