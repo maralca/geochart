@@ -1,7 +1,6 @@
 	String.prototype.capitalize = function() {
    	 return this.charAt(0).toUpperCase() + this.slice(1);
 	}
-
 	var docs,doc;
 	var docIndex;
 
@@ -31,8 +30,15 @@
 
 	var matrixNome;
 
-	matrixNome = {};
+	var arqNomes;
 
+	if(window.XTR_NOME_MUNICIPIOS)
+		matrixNome = XTR_NOME_MUNICIPIOS;
+	else
+		matrixNome = {};
+
+	arqNomes = {};
+	console.log(matrixNome);
 	document.addEventListener("DOMContentLoaded",function(){
 		count = 0;
 		document.getElementById("UP_1").addEventListener("change",function(event){
@@ -44,6 +50,7 @@
 				var iframe = document.createElement("iframe");
 				iframe.setAttribute("src",URL.createObjectURL(arquivo));
 				iframe.setAttribute("name",arquivo.name);
+				arqNomes[arquivoIndex] = arquivo.name.slice(0,2);
 				document.body.appendChild(iframe);
 
 			}
@@ -51,20 +58,22 @@
 
 			for(docIndex = 0; docs.length > docIndex; docIndex++){
 				doc = docs[docIndex];
-
+				doc.setAttribute("data-index",docIndex);
 				doc.addEventListener("load",function(){
-
+					var docIndex = this.getAttribute("data-index");
 					table = this.contentDocument.querySelector("tbody");
 					trs = table.querySelectorAll("tr");
 					for(trIndex = 0; trs.length > trIndex; trIndex++){
 						tr = trs[trIndex];
 						tdNome = tr.querySelector("td:first-child");
-						tdId = tr.querySelector("td:nth-child(2)");
-						matrixNome["m"+tdId.innerHTML] = tdNome.innerHTML;
+						tdId = tr.querySelector("td:nth-child(2)");	
+						matrixNome["m"+tdId.innerHTML] = tdNome.innerHTML + " / "+ arqNomes[docIndex];
 					}
 					count ++;
 					if(count >= docs.length){
 						console.log(matrixNome);
+						var content = "var XTR_NOME_MUNICIPIOS = "+JSON.stringify(matrixNome)+";";
+						//FileHandler(content,false,false).download("XTR_NOME_MUNICIPIOS.js",function(){});
 					}
 				});
 			};
@@ -147,6 +156,12 @@
 									for(indexLevelThree = 0; gMunicipios.length > indexLevelThree; indexLevelThree++){
 										gMunicipio = gMunicipios[indexLevelThree];
 
+										if(!matrixNome[gMunicipio.id]){
+											var aux = gMunicipio.id.substr(1);
+											aux = "m1"+aux;
+											matrixNome[gMunicipio.id] = matrixNome[aux];
+										}
+
 										innerMatrix["BRASIL"][gRegiao.id][gEstado.id][gMunicipio.id] = {
 											nome: matrixNome[gMunicipio.id],
 											coordenadas: [],
@@ -217,6 +232,12 @@
 								for(indexLevelTwo = 0; gMunicipios.length > indexLevelTwo; indexLevelTwo++){
 									gMunicipio = gMunicipios[indexLevelTwo];
 
+
+									if(!matrixNome[gMunicipio.id]){
+										var aux = gMunicipio.id.substr(1);
+										aux = "m1"+aux;
+										matrixNome[gMunicipio.id] = matrixNome[aux];
+									}
 									innerMatrix[gRegiao.id][gEstado.id][gMunicipio.id]={
 										nome: matrixNome[gMunicipio.id],
 										coordenadas: [],
@@ -246,12 +267,18 @@
 						for(indexLevelOne = 0; gMunicipios.length > indexLevelOne; indexLevelOne++){
 							gMunicipio = gMunicipios[indexLevelOne];
 
+							if(!matrixNome[gMunicipio.id]){
+								var aux = gMunicipio.id.substr(1);
+								aux = "m1"+aux;
+								matrixNome[gMunicipio.id] = matrixNome[aux];
+							}
 							innerMatrix[gEstado.id][gMunicipio.id] = {
 								nome: matrixNome[gMunicipio.id],
 								coordenadas: [],
 								attr: "d",
 								tag: "path"
-							}
+							};
+
 							pathMunicipios = gMunicipio.querySelectorAll("path");
 
 							for(indexLevelTwo = 0; pathMunicipios.length > indexLevelTwo; indexLevelTwo++){
@@ -267,9 +294,9 @@
 					var content;
 					content = "var XTR_"+filename+" = "+JSON.stringify(innerMatrix)+";";
 					
-					console.log(filename);
 					console.log(innerMatrix);
 					FileHandler(content,false,false).download("XTR_"+filename+".js",function(){});
+					innerMatrix = null;
 				});
 			};
 		});
