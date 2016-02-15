@@ -149,7 +149,7 @@
 
 										innerMatrix["BRASIL"][gRegiao.id][gEstado.id][gMunicipio.id] = {
 											nome: matrixNome[gMunicipio.id],
-											coordenada: [],
+											coordenadas: [],
 											tag: "path",
 											attr: "d"
 										};
@@ -159,7 +159,7 @@
 										for(indexLevelFour = 0; pathMunicipios.length > indexLevelFour; indexLevelFour++){
 											pathMunicipio = pathMunicipios[indexLevelFour];
 											coordenadas = pathMunicipio.getAttribute("d");
-											innerMatrix["BRASIL"][gRegiao.id][gEstado.id][gMunicipio.id].coordenada.push(coordenadas)
+											innerMatrix["BRASIL"][gRegiao.id][gEstado.id][gMunicipio.id].coordenadas.push(coordenadas)
 										}
 
 									}
@@ -174,7 +174,7 @@
 
 									innerMatrix["BRASIL"][gRegiao.id][pathEstado.id] = {
 										nome: pathEstado.id,
-										coordenada: pathEstado.getAttribute("d"),
+										coordenadas: pathEstado.getAttribute("d"),
 										tag: "path",
 										attr: "d"
 									};
@@ -200,7 +200,7 @@
 
 								innerMatrix[gRegiao.id][pathEstado.id] = {
 									nome: pathEstado.id,
-									coordenada: pathEstado.getAttribute("points"),
+									coordenadas: pathEstado.getAttribute("points"),
 									tag: "polygon",
 									attr: "points"
 								};
@@ -248,7 +248,9 @@
 
 							innerMatrix[gEstado.id][gMunicipio.id] = {
 								nome: matrixNome[gMunicipio.id],
-								coordenadas: []
+								coordenadas: [],
+								attr: "d",
+								tag: "path"
 							}
 							pathMunicipios = gMunicipio.querySelectorAll("path");
 
@@ -369,7 +371,7 @@
         	base64 = create();
 
             element = document.createElement('a');
-            element.setAttribute('href', 'data:text/javascript;charset=utf-8,' + base64);
+            element.setAttribute('href', 'data:text/javascript;charset=utf-8,' + encodeURIComponent(base64));
             element.setAttribute('download', filename);
             element.setAttribute("target","_blank");
 
