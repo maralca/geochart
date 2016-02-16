@@ -41,51 +41,6 @@
 	console.log(matrixNome);
 	document.addEventListener("DOMContentLoaded",function(){
 		count = 0;
-		document.getElementById("UP_1").addEventListener("change",function(event){
-			arquivos = event.target.files;
-
-			for(arquivoIndex = 0; arquivos.length > arquivoIndex; arquivoIndex++){
-				arquivo = arquivos[arquivoIndex];				
-				
-				var iframe = document.createElement("iframe");
-				iframe.setAttribute("src",URL.createObjectURL(arquivo));
-				iframe.setAttribute("name",arquivo.name);
-				arqNomes[arquivoIndex] = arquivo.name.slice(0,2);
-				document.body.appendChild(iframe);
-
-			}
-			docs = document.querySelectorAll("iframe");
-
-			for(docIndex = 0; docs.length > docIndex; docIndex++){
-				doc = docs[docIndex];
-				doc.setAttribute("data-index",docIndex);
-				doc.addEventListener("load",function(){
-					var docIndex = this.getAttribute("data-index");
-					table = this.contentDocument.querySelector("tbody");
-					trs = table.querySelectorAll("tr");
-					for(trIndex = 0; trs.length > trIndex; trIndex++){
-						tr = trs[trIndex];
-						tdNome = tr.querySelector("td:first-child");
-						tdId = tr.querySelector("td:nth-child(2)");	
-						matrixNome["m"+tdId.innerHTML] = tdNome.innerHTML + " / "+ arqNomes[docIndex];
-					}
-					count ++;
-					if(count >= docs.length){
-						console.log(matrixNome);
-						var content = "var XTR_NOME_MUNICIPIOS = "+JSON.stringify(matrixNome)+";";
-						//FileHandler(content,false,false).download("XTR_NOME_MUNICIPIOS.js",function(){});
-					}
-				});
-			};
-		});
-		const regioesNome = [
-			"norte",
-			"nordeste",
-			"centro-oeste",
-			"sudeste",
-			"sul"
-		];
-
 		document.getElementById("UP_2").addEventListener("change",function(event){
 			arquivos = event.target.files;
 
@@ -156,14 +111,7 @@
 									for(indexLevelThree = 0; gMunicipios.length > indexLevelThree; indexLevelThree++){
 										gMunicipio = gMunicipios[indexLevelThree];
 
-										if(!matrixNome[gMunicipio.id]){
-											var aux = gMunicipio.id.substr(1);
-											aux = "m1"+aux;
-											matrixNome[gMunicipio.id] = matrixNome[aux];
-										}
-
 										innerMatrix["BRASIL"][gRegiao.id][gEstado.id][gMunicipio.id] = {
-											nome: matrixNome[gMunicipio.id],
 											coordenadas: [],
 											tag: "path",
 											attr: "d"
@@ -188,7 +136,6 @@
 									pathEstado = pathEstados[indexLevelTwo];
 
 									innerMatrix["BRASIL"][gRegiao.id][pathEstado.id] = {
-										nome: pathEstado.id,
 										coordenadas: pathEstado.getAttribute("d"),
 										tag: "path",
 										attr: "d"
@@ -214,7 +161,6 @@
 								pathEstado = pathEstados[indexLevelOne];
 
 								innerMatrix[gRegiao.id][pathEstado.id] = {
-									nome: pathEstado.id,
 									coordenadas: pathEstado.getAttribute("points"),
 									tag: "polygon",
 									attr: "points"
@@ -232,14 +178,7 @@
 								for(indexLevelTwo = 0; gMunicipios.length > indexLevelTwo; indexLevelTwo++){
 									gMunicipio = gMunicipios[indexLevelTwo];
 
-
-									if(!matrixNome[gMunicipio.id]){
-										var aux = gMunicipio.id.substr(1);
-										aux = "m1"+aux;
-										matrixNome[gMunicipio.id] = matrixNome[aux];
-									}
 									innerMatrix[gRegiao.id][gEstado.id][gMunicipio.id]={
-										nome: matrixNome[gMunicipio.id],
 										coordenadas: [],
 										tag: "path",
 										attr: "d"
@@ -267,13 +206,7 @@
 						for(indexLevelOne = 0; gMunicipios.length > indexLevelOne; indexLevelOne++){
 							gMunicipio = gMunicipios[indexLevelOne];
 
-							if(!matrixNome[gMunicipio.id]){
-								var aux = gMunicipio.id.substr(1);
-								aux = "m1"+aux;
-								matrixNome[gMunicipio.id] = matrixNome[aux];
-							}
 							innerMatrix[gEstado.id][gMunicipio.id] = {
-								nome: matrixNome[gMunicipio.id],
 								coordenadas: [],
 								attr: "d",
 								tag: "path"
