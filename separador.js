@@ -200,7 +200,7 @@
 
 						innerMatrix[gEstado.id] = {};
 
-						filename = gEstado.id;
+						filename = "MUNICIPIOS_"+gEstado.id;
 						gMunicipios = svg.querySelectorAll("#"+gEstado.id+" > g");
 
 						for(indexLevelOne = 0; gMunicipios.length > indexLevelOne; indexLevelOne++){
